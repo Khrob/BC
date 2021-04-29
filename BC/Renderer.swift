@@ -235,16 +235,16 @@ class Renderer : NSObject, MTKViewDelegate
         view_matrix = matrix
     }
     
-    func draw (_ object_name:String, at model_matrix:simd_float4x4, with shader_name:String, and texture:String?=nil, colour:simd_float4? = nil)
+    func draw (_ object_name:String, at model_matrix:simd_float4x4, shader:String, texture:String?=nil, colour:simd_float4? = nil)
     {
         let id = addresses[object_name]!
         let a  = object_addresses[id]!
         uniforms.model_view_matrix = view_matrix * model_matrix
         uniforms.colour = colour ?? simd_float4(0,0,0,1)
         
-        if current_shader != shader_name {
-            current_shader = shader_name
-            command_encoder.setRenderPipelineState(shaders[shader_name]!)
+        if current_shader != shader {
+            current_shader = shader
+            command_encoder.setRenderPipelineState(shaders[shader]!)
         }
         command_encoder.setFragmentBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: 0)
         command_encoder.setVertexBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: 1)

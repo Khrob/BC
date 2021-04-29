@@ -32,6 +32,7 @@ struct Player
 }
 
 var player:Player!
+var click_point = CGPoint.zero
 
 class ViewController: NSViewController
 {
@@ -97,6 +98,11 @@ class ViewController: NSViewController
             let index = grid_index(point)
             if map[index] == .empty { map[index] = .ground_dark }
             else { map[index] = .empty }
+            
+            click_point.x = (point.x - 1.0) * CGFloat(Map_Width)  * 10.0
+            click_point.y = (point.y - 1.0) * CGFloat(Map_Height) * 10.0
+            
+            print(click_point)
         }
         
         player = Player(x: 0, y: 0, tx: 0, ty: 0, aim: 0)
@@ -113,6 +119,11 @@ class ViewController: NSViewController
         objects.forEach { o in renderer.draw(o.model, at:o.transform, shader:"Colour", colour:o.colour) }
         
         draw_player(renderer: renderer)
+        
+        if click_point != .zero {
+            let cptx = scale_matrix(0.1) * translate_matrix(Float(click_point.x), 0.5, Float(click_point.y))
+            renderer.draw("Cube", at: cptx, shader: "Colour", colour:simd_float4(1,0,0,1))
+        }
     }
     
     func update ()

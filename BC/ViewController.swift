@@ -22,6 +22,17 @@ struct Game_Object
 
 var objects:[Game_Object] = []
 
+struct Player
+{
+    var x:Float
+    var y:Float
+    var tx:Float
+    var ty:Float
+    var aim:Float
+}
+
+var player:Player!
+
 class ViewController: NSViewController
 {
     // Plumbing
@@ -56,28 +67,29 @@ class ViewController: NSViewController
             Object_Vertex(x:  1, y: -1, z: 1, w: 1, nx: 0, ny: 0, nz: -1, nw: 1, u: 1, v: 1, o: 0, p: 0),
         ]
 
-        let fullscreen = Object(name: "Fullscreen", material_library: "blah", material: "blah", vertices: whole_screen_verts)
         let cube = load_objects(file: "/Users/khrob/Desktop/cube.obj")
+        let weapons = load_objects(file: "/Users/khrob/Desktop/weapons.obj")
+        let characters = load_objects(file: "/Users/khrob/Desktop/characters.obj")
+        let fullscreen = Object(name: "Fullscreen", material_library: "blah", material: "blah", vertices: whole_screen_verts)
         
         renderer.add(objects: cube)
+        renderer.add(objects: weapons)
+        renderer.add(objects: characters)
         renderer.add(objects: [fullscreen])
         
         print(renderer.object_addresses)
         
         // Build the map
         for i in 0..<map.count {
-            let x = i / Map_Width
-            let z = i % Map_Width
+            let x = (i / Map_Width) - (Map_Width/2)
+            let z = (i % Map_Width) - (Map_Width/2)
             
             if (x % 2 == 0) && (z % 2 == 0) || (x % 2 != 0) && (z % 2 != 0) { map[i] = .ground_light }
             
-            var position_matrix = Identity
-            position_matrix *= scale_matrix (1,6.05,1)
-            
-            position_matrix *= translate_matrix(Float(x)*2.4,-0.05,Float(z)*2.4)
+            let position = scale_matrix (1,0.05,1) * translate_matrix(Float(x)*2.4,-0.05,Float(z)*2.4)
             
             let colour = map[i] == .ground_dark ? simd_float4(0.5,0.5,0,1) : simd_float4(0.5,0.5,1,1)
-            let o = Game_Object(model: "Cube", transform: position_matrix, colour: colour)
+            let o = Game_Object(model: "Cube", transform: position, colour: colour)
             objects.append(o)
         }
         
@@ -86,6 +98,8 @@ class ViewController: NSViewController
             if map[index] == .empty { map[index] = .ground_dark }
             else { map[index] = .empty }
         }
+        
+        player = Player(x: 0, y: 0, tx: 0, ty: 0, aim: 0)
         
         // Start the update loop
         Timer.scheduledTimer(withTimeInterval: 1.0/FPS, repeats: true) { _ in self.update() }
@@ -96,9 +110,9 @@ class ViewController: NSViewController
         let camera_matrix = rotate_matrix(axis: simd_float3(1,0,0), angle: Float.pi/2) * translate_matrix(0,-13.25,0)
         renderer.camera(camera_matrix)
         
-        objects.forEach { o in
-            renderer.draw(o.model, at:o.transform, with:"Colour", colour:o.colour)
-        }
+        objects.forEach { o in renderer.draw(o.model, at:o.transform, shader:"Colour", colour:o.colour) }
+        
+        draw_player(renderer: renderer)
     }
     
     func update ()
@@ -122,4 +136,24 @@ func grid_index (_ point:CGPoint) -> Int
 {
     let p = grid_point(point)
     return p.0 * Map_Width + p.1
+}
+
+func draw_player (renderer:Renderer)
+{
+    let dx = player.tx - player.x
+    let dy = player.ty - player.y
+    
+    let theta = atan2(dy, dx)
+    
+    var transform = rotate_matrix(axis: simd_float3(0,1,0), angle: theta)
+    
+    transform *= translate_matrix(player.x, 0.3, player.y)
+    
+    renderer.draw("Player_Legs", at:transform, shader:"Colour", colour: simd_float4(0.1,1,0.3,1))
+    
+    let weapon_transform = transform * translate_matrix(-1, 1, 0)
+    renderer.draw("Launcher", at:weapon_transform, shader: "Colour", colour: simd_float4(0.6,0.1,0.1,1))
+    
+    let torso_transform = rotate_matrix(axis: simd_float3(0,1,0), angle: player.aim) * transform * translate_matrix(0,1,0)
+    renderer.draw("Player_Torso", at:torso_transform, shader: "Colour", colour: simd_float4(0.1,1,0.1,1))
 }

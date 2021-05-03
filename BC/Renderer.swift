@@ -75,7 +75,7 @@ var uniforms = Uniforms(
     width: 1024, height: 1024,
     model_view_matrix: simd_float4x4(1.0), projection_matrix: simd_float4x4(1.0),
     colour: simd_float4(0,0,0,0),
-    ambient_intensity: 0.5,
+    ambient_intensity: 0.15,
     light_position: simd_float3(0,10,0),
     light_colour: simd_float3(0.0,0.05,0.1))
 
@@ -241,7 +241,7 @@ class Renderer : NSObject, MTKViewDelegate
         let a  = object_addresses[id]!
         uniforms.model_view_matrix = view_matrix * model_matrix
         uniforms.colour = colour ?? simd_float4(0,0,0,1)
-        
+        uniforms.light_colour = simd_float3(0.8,0.1,0.1)
         if current_shader != shader {
             current_shader = shader
             command_encoder.setRenderPipelineState(shaders[shader]!)

@@ -22,16 +22,6 @@ struct Game_Object
 
 var objects:[Game_Object] = []
 
-struct Player
-{
-    var x:Float
-    var y:Float
-    var tx:Float
-    var ty:Float
-    var aim:Float
-}
-
-var player:Player!
 var click_point = CGPoint.zero
 
 enum Piece_Type : String
@@ -179,24 +169,4 @@ func grid_index (_ point:CGPoint) -> Int
 {
     let p = grid_point(point)
     return p.0 * Map_Width + p.1
-}
-
-func draw_player (renderer:Renderer)
-{
-    let dx = player.tx - player.x
-    let dy = player.ty - player.y
-    
-    let theta = atan2(dy, dx)
-    
-    var transform = rotate_matrix(axis: simd_float3(0,1,0), angle: theta)
-    
-    transform *= translate_matrix(player.x, 0.3, player.y)
-    
-    renderer.draw("Player_Legs", at:transform, shader:"Colour", colour: simd_float4(0.1,1,0.3,1))
-    
-    let weapon_transform = transform * translate_matrix(-1, 1, 0)
-    renderer.draw("Launcher", at:weapon_transform, shader: "Colour", colour: simd_float4(0.6,0.1,0.1,1))
-    
-    let torso_transform = rotate_matrix(axis: simd_float3(0,1,0), angle: player.aim) * transform * translate_matrix(0,1,0)
-    renderer.draw("Player_Torso", at:torso_transform, shader: "Colour", colour: simd_float4(0.1,1,0.1,1))
 }

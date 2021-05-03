@@ -45,17 +45,6 @@ struct Object
     let vertices:[Object_Vertex]
 }
 
-struct Level
-{
-    let geometry:[Geometry_Instance]
-}
-
-struct Geometry_Instance
-{
-    let name:String
-    let orientation:simd_float4x4
-}
-
 struct Object_Address
 {
     let name:String
@@ -356,15 +345,6 @@ func build_combined_vertex_buffer (objects:[Object], device:MTLDevice) -> (MTLBu
     let buffer = device.makeBuffer(bytes: vertices, length: MemoryLayout<Object_Vertex>.stride * vertices.count, options: [])!
     return (buffer, addresses)
 }
-
-
-func instance_uniforms (_ geo:[Geometry_Instance], device:MTLDevice) -> MTLBuffer
-{
-    let ius = geo.map { Instance_Uniform(matrix: $0.orientation) }
-    let buffer = device.makeBuffer(bytes: ius, length: MemoryLayout<Instance_Uniform>.stride * geo.count, options: [])!
-    return buffer
-}
-
 
 func rotate_matrix (axis:simd_float3, angle: Float) -> simd_float4x4
 {

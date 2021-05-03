@@ -110,32 +110,3 @@ func load_objects (file:String) -> [Object]
     
     return objects
 }
-
-
-func load_level (file:String) -> Level
-{
-    let contents = try! String(contentsOfFile: file)
-    var instances:[Geometry_Instance] = []
-    let lines = contents.split(separator: "\n")
-    var index = 0
-    
-    repeat {
-        let name = lines[index]
-        let matrix1 = Array(lines[index+1].split(separator: " ")).map{ Float($0)! }
-        let matrix2 = Array(lines[index+2].split(separator: " ")).map{ Float($0)! }
-        let matrix3 = Array(lines[index+3].split(separator: " ")).map{ Float($0)! }
-        let matrix4 = Array(lines[index+4].split(separator: " ")).map{ Float($0)! }
-        let matrix = simd_float4x4([
-            [matrix1[0], matrix1[1], matrix1[2], matrix1[3]],
-            [matrix2[0], matrix2[1], matrix2[2], matrix2[3]],
-            [matrix3[0], matrix3[1], matrix3[2], matrix3[3]],
-            [matrix4[0], matrix4[1], matrix4[2], matrix4[3]]
-        ])
-        
-        instances.append(Geometry_Instance(name: String(name), orientation: matrix))
-        index += 5
-        
-    } while index <= lines.count - 5
-    
-    return Level(geometry: instances)
-}

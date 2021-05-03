@@ -66,7 +66,8 @@ var uniforms = Uniforms(
     colour: simd_float4(0,0,0,0),
     ambient_intensity: 0.15,
     light_position: simd_float3(0,10,0),
-    light_colour: simd_float3(0.0,0.05,0.1))
+    light_colour: simd_float3(0.0,0.05,0.1)
+)
 
 struct Input
 {
@@ -243,6 +244,18 @@ class Renderer : NSObject, MTKViewDelegate
             command_encoder.setFragmentSamplerState(sampler, index: 0)
         }
         command_encoder.drawPrimitives(type: .triangle, vertexStart: a.start, vertexCount: a.length)
+    }
+    
+    func wire (_ object_name:String, at model_matrix:simd_float4x4, colour:simd_float4? = nil)
+    {
+        let id = addresses[object_name]!
+        let a  = object_addresses[id]!
+        uniforms.model_view_matrix = view_matrix * model_matrix
+        uniforms.colour = colour ?? simd_float4(1,1,1,1)
+        command_encoder.setRenderPipelineState(shaders["Colour"]!)
+        command_encoder.setFragmentBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: 0)
+        command_encoder.setVertexBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: 1)
+        command_encoder.drawPrimitives(type: .lineStrip, vertexStart: a.start, vertexCount: a.length)
     }
     
     init (view:Render_View)
